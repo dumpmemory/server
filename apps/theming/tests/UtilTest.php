@@ -13,6 +13,7 @@ use OCP\Files\NotFoundException;
 use OCP\Files\SimpleFS\ISimpleFile;
 use OCP\Files\SimpleFS\ISimpleFolder;
 use OCP\IConfig;
+use OCP\ServerVersion;
 use PHPUnit\Framework\MockObject\MockObject;
 use Test\TestCase;
 
@@ -30,7 +31,7 @@ class UtilTest extends TestCase {
 		$this->appData = $this->createMock(IAppData::class);
 		$this->appManager = \OCP\Server::get(IAppManager::class);
 		$this->imageManager = $this->createMock(ImageManager::class);
-		$this->util = new Util($this->config, $this->appManager, $this->appData, $this->imageManager);
+		$this->util = new Util($this->createMock(ServerVersion::class), $this->config, $this->appManager, $this->appData, $this->imageManager);
 	}
 
 	public function dataColorContrast() {
@@ -47,7 +48,7 @@ class UtilTest extends TestCase {
 	/**
 	 * @dataProvider dataColorContrast
 	 */
-	public function testColorContrast(string $color1, string $color2, $contrast) {
+	public function testColorContrast(string $color1, string $color2, $contrast): void {
 		$this->assertEqualsWithDelta($contrast, $this->util->colorContrast($color1, $color2), .001);
 	}
 
@@ -62,78 +63,78 @@ class UtilTest extends TestCase {
 	/**
 	 * @dataProvider dataInvertTextColor
 	 */
-	public function testInvertTextColor($color, $expected) {
+	public function testInvertTextColor($color, $expected): void {
 		$invert = $this->util->invertTextColor($color);
 		$this->assertEquals($expected, $invert);
 	}
 
-	public function testCalculateLuminanceLight() {
+	public function testCalculateLuminanceLight(): void {
 		$luminance = $this->util->calculateLuminance('#ffffff');
 		$this->assertEquals(1, $luminance);
 	}
 
-	public function testCalculateLuminanceDark() {
+	public function testCalculateLuminanceDark(): void {
 		$luminance = $this->util->calculateLuminance('#000000');
 		$this->assertEquals(0, $luminance);
 	}
 
-	public function testCalculateLuminanceLightShorthand() {
+	public function testCalculateLuminanceLightShorthand(): void {
 		$luminance = $this->util->calculateLuminance('#fff');
 		$this->assertEquals(1, $luminance);
 	}
 
-	public function testCalculateLuminanceDarkShorthand() {
+	public function testCalculateLuminanceDarkShorthand(): void {
 		$luminance = $this->util->calculateLuminance('#000');
 		$this->assertEquals(0, $luminance);
 	}
 
-	public function testInvertTextColorInvalid() {
+	public function testInvertTextColorInvalid(): void {
 		$this->expectException(\Exception::class);
 		$this->util->invertTextColor('aaabbbcccddd123');
 	}
 
-	public function testInvertTextColorEmpty() {
+	public function testInvertTextColorEmpty(): void {
 		$this->expectException(\Exception::class);
 		$this->util->invertTextColor('');
 	}
 
-	public function testElementColorDefaultBlack() {
+	public function testElementColorDefaultBlack(): void {
 		$elementColor = $this->util->elementColor('#000000');
 		$this->assertEquals('#4d4d4d', $elementColor);
 	}
 
-	public function testElementColorDefaultWhite() {
+	public function testElementColorDefaultWhite(): void {
 		$elementColor = $this->util->elementColor('#ffffff');
 		$this->assertEquals('#b3b3b3', $elementColor);
 	}
 
-	public function testElementColorBlackOnDarkBackground() {
+	public function testElementColorBlackOnDarkBackground(): void {
 		$elementColor = $this->util->elementColor('#000000', false);
 		$this->assertEquals('#4d4d4d', $elementColor);
 	}
 
-	public function testElementColorBlackOnBrightBackground() {
+	public function testElementColorBlackOnBrightBackground(): void {
 		$elementColor = $this->util->elementColor('#000000', true);
 		$this->assertEquals('#000000', $elementColor);
 	}
 
-	public function testElementColorWhiteOnBrightBackground() {
+	public function testElementColorWhiteOnBrightBackground(): void {
 		$elementColor = $this->util->elementColor('#ffffff', true);
 		$this->assertEquals('#b3b3b3', $elementColor);
 	}
 
-	public function testElementColorWhiteOnDarkBackground() {
+	public function testElementColorWhiteOnDarkBackground(): void {
 		$elementColor = $this->util->elementColor('#ffffff', false);
 		$this->assertEquals('#ffffff', $elementColor);
 	}
 
-	public function testGenerateRadioButtonWhite() {
+	public function testGenerateRadioButtonWhite(): void {
 		$button = $this->util->generateRadioButton('#ffffff');
 		$expected = 'PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGhlaWdodD0iMTYiIHdpZHRoPSIxNiI+PHBhdGggZD0iTTggMWE3IDcgMCAwIDAtNyA3IDcgNyAwIDAgMCA3IDcgNyA3IDAgMCAwIDctNyA3IDcgMCAwIDAtNy03em0wIDFhNiA2IDAgMCAxIDYgNiA2IDYgMCAwIDEtNiA2IDYgNiAwIDAgMS02LTYgNiA2IDAgMCAxIDYtNnptMCAyYTQgNCAwIDEgMCAwIDggNCA0IDAgMCAwIDAtOHoiIGZpbGw9IiNmZmZmZmYiLz48L3N2Zz4=';
 		$this->assertEquals($expected, $button);
 	}
 
-	public function testGenerateRadioButtonBlack() {
+	public function testGenerateRadioButtonBlack(): void {
 		$button = $this->util->generateRadioButton('#000000');
 		$expected = 'PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGhlaWdodD0iMTYiIHdpZHRoPSIxNiI+PHBhdGggZD0iTTggMWE3IDcgMCAwIDAtNyA3IDcgNyAwIDAgMCA3IDcgNyA3IDAgMCAwIDctNyA3IDcgMCAwIDAtNy03em0wIDFhNiA2IDAgMCAxIDYgNiA2IDYgMCAwIDEtNiA2IDYgNiAwIDAgMS02LTYgNiA2IDAgMCAxIDYtNnptMCAyYTQgNCAwIDEgMCAwIDggNCA0IDAgMCAwIDAtOHoiIGZpbGw9IiMwMDAwMDAiLz48L3N2Zz4=';
 		$this->assertEquals($expected, $button);
@@ -142,7 +143,7 @@ class UtilTest extends TestCase {
 	/**
 	 * @dataProvider dataGetAppIcon
 	 */
-	public function testGetAppIcon($app, $expected) {
+	public function testGetAppIcon($app, $expected): void {
 		$this->appData->expects($this->any())
 			->method('getFolder')
 			->with('global/images')
@@ -159,7 +160,7 @@ class UtilTest extends TestCase {
 		];
 	}
 
-	public function testGetAppIconThemed() {
+	public function testGetAppIconThemed(): void {
 		$file = $this->createMock(ISimpleFile::class);
 		$folder = $this->createMock(ISimpleFolder::class);
 		$folder->expects($this->once())
@@ -177,7 +178,7 @@ class UtilTest extends TestCase {
 	/**
 	 * @dataProvider dataGetAppImage
 	 */
-	public function testGetAppImage($app, $image, $expected) {
+	public function testGetAppImage($app, $image, $expected): void {
 		$this->assertEquals($expected, $this->util->getAppImage($app, $image));
 	}
 
@@ -190,14 +191,14 @@ class UtilTest extends TestCase {
 		];
 	}
 
-	public function testColorizeSvg() {
+	public function testColorizeSvg(): void {
 		$input = '#0082c9 #0082C9 #000000 #FFFFFF';
 		$expected = '#AAAAAA #AAAAAA #000000 #FFFFFF';
 		$result = $this->util->colorizeSvg($input, '#AAAAAA');
 		$this->assertEquals($expected, $result);
 	}
 
-	public function testIsAlreadyThemedFalse() {
+	public function testIsAlreadyThemedFalse(): void {
 		$this->config->expects($this->once())
 			->method('getSystemValue')
 			->with('theme', '')
@@ -206,7 +207,7 @@ class UtilTest extends TestCase {
 		$this->assertFalse($actual);
 	}
 
-	public function testIsAlreadyThemedTrue() {
+	public function testIsAlreadyThemedTrue(): void {
 		$this->config->expects($this->once())
 			->method('getSystemValue')
 			->with('theme', '')
@@ -225,7 +226,7 @@ class UtilTest extends TestCase {
 	/**
 	 * @dataProvider dataIsBackgroundThemed
 	 */
-	public function testIsBackgroundThemed($backgroundMime, $expected) {
+	public function testIsBackgroundThemed($backgroundMime, $expected): void {
 		$this->config->expects($this->once())
 			->method('getAppValue')
 			->with('theming', 'backgroundMime', '')
